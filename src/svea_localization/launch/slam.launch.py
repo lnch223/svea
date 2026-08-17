@@ -75,10 +75,10 @@ def main(
 
     # Frames — same convention as localization.launch.py
     map_frame = "map"
-    odom_frame = f"/{name}/odom"
-    base_frame = f"/{name}/base_link"
-    laser_frame = f"/{name}/laser"
-    imu_frame = f"/{name}/imu"
+    odom_frame = f"{name}/odom"
+    base_frame = f"{name}/base_link"
+    laser_frame = f"{name}/laser"
+    imu_frame = f"{name}/imu"
 
     # ------------------------------------------------------------------
     # Low-Level Interface
@@ -122,14 +122,15 @@ def main(
         # --------------------------------------------------------------
         # Local EKF:  <name>/odom -> <name>/base_link
         # --------------------------------------------------------------
-        odom0 = f"/{name}/mavros/wheel_odometry/odom" if use_two_encoders else f"/{name}/wheel_odometry/twist/filtered"
-
-        if not use_two_encoders:
+        if use_two_encoders:
+            ekf_input = {"odom0": f"/{name}/mavros/wheel_odometry/odom"}
+        else:
+            ekf_input = {"twist0": f"/{name}/wheel_odometry/twist/filtered"}
             bl.node("svea_localization", "single_encoder_twist_filter.py",
                         name="wheel_twist",
                         params={"base_frame":       base_frame,
                                 "distance_topic":   f"/{name}/mavros/wheel_odometry/distance",
-                                "twist_topic":      odom0,
+                                "twist_topic":      ekf_input["twist0"],
                                 "imu_topic":        f"/{name}/mavros/imu/data_raw",
                                 "rc_topic":         f"/{name}/mavros/rc/in",
                                 "control_topic":    f"/{name}/mavros/manual_control/send"})
@@ -143,7 +144,7 @@ def main(
                             "odom_frame": odom_frame,
                             "base_link_frame": base_frame,
                             "world_frame": odom_frame,
-                            "odom0": odom0},
+                            "twist0": ekf_input["twist0"]},
                     remaps={"odometry/filtered": "odometry/local"})
 
         # --------------------------------------------------------------

@@ -18,8 +18,6 @@ def load_obstacles(bl, map_pkg, map_name):
     with open(path) as f:
         data = yaml.safe_load(f) or {}
 
-    # Tolerate both a bare list and the usual {'obstacles': [...]} layout,
-    # as well as an accidental ros__parameters section.
     if isinstance(data, dict):
         if 'ros__parameters' in data:
             data = data['ros__parameters']
@@ -65,5 +63,5 @@ def main(
             bl.node("svea_core", "sim_lidar.py",
                     name="sim_lidar",
                     params=dict(laser_frame=f"{name}/laser",
-                                odometry_top="odometry/local",
+                                odometry_topic="odometry/local",
                                 obstacles=str(OBSTACLES)))

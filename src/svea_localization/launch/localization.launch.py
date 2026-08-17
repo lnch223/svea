@@ -81,17 +81,17 @@ def main(
                             "odom_frame": odom_frame,
                             "base_link_frame": base_frame,
                             "world_frame": odom_frame,
-                            "imu0": f"{name}/mavros/imu/data_raw",
-                            "odom0": f"{name}/mavros/wheel_odometry/odom"}
+                            "imu0": f"/{name}/mavros/imu/data_raw",
+                            "twist0": f"/{name}/mavros/wheel_odometry/odom"}
 
         if not use_two_encoders:
-            LOCAL_EKF_PARAMS["odom0"] = f"{name}/wheel_odometry/twist/filtered"
+            LOCAL_EKF_PARAMS["twist0"] = f"/{name}/wheel_odometry/twist/filtered"
 
             bl.node("svea_localization", "single_encoder_twist_filter.py",
                         name="wheel_twist",
                         params={"base_frame":       base_frame,
                                 "distance_topic":   f"/{name}/mavros/wheel_odometry/distance",
-                                "twist_topic":      odom0,
+                                "twist_topic":      LOCAL_EKF_PARAMS["twist0"],
                                 "imu_topic":        f"/{name}/mavros/imu/data_raw",
                                 "rc_topic":         f"/{name}/mavros/rc/in",
                                 "control_topic":    f"/{name}/mavros/manual_control/send"})
@@ -99,7 +99,7 @@ def main(
         with bl.group(name):
             bl.node("robot_localization", "ekf_node",
                     name="ekf_local",
-                    param_files=LOCAL_EKF_PARAMS_FILE,
+                    cmd_args=["--ros-args", "--params-file", LOCAL_EKF_PARAMS_FILE],
                     params=LOCAL_EKF_PARAMS,
                     remaps={"odometry/filtered": "odometry/local"})
 
@@ -171,5 +171,5 @@ def main(
                             "base_link_frame": base_frame,
                             "world_frame": map_frame,
                             "imu0": f"{name}/mavros/imu/data_raw",
-                            "odom0": f"{name}/mavros/wheel_odometry/odom"},
+                            "twist0": f"{name}/mavros/wheel_odometry/odom"},
                     remap={"/odometry/filtered": f"{name}/odometry/global"})
