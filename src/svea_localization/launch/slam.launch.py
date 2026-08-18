@@ -123,7 +123,7 @@ def main(
         # Local EKF:  <name>/odom -> <name>/base_link
         # --------------------------------------------------------------
         if use_two_encoders:
-            ekf_input = {"odom0": f"/{name}/mavros/wheel_odometry/odom"}
+            ekf_input = {"twist0": f"/{name}/mavros/wheel_odometry/odom"}
         else:
             ekf_input = {"twist0": f"/{name}/wheel_odometry/twist/filtered"}
             bl.node("svea_localization", "single_encoder_twist_filter.py",
